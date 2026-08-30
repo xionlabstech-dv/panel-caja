@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Ese usuario ya está en uso' }, 400);
   }
 
-  const { data: negocioId, error: negocioError } = await supabaseAdmin.rpc('panel_crear_negocio', {
+  const { data: negocioId, error: negocioError } = await supabaseCaller.rpc('panel_crear_negocio', {
     p_nombre: nombreNegocio,
   });
 
