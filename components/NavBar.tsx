@@ -7,6 +7,7 @@ import { cerrarSesion } from '@/lib/auth';
 const links = [
   { href: '/negocios', label: 'Negocios' },
   { href: '/crear-negocio', label: 'Crear negocio' },
+  { href: '/auditoria', label: 'Auditoría' },
   { href: '/cuenta', label: 'Mi cuenta' },
 ];
 

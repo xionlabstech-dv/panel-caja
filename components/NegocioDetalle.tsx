@@ -6,6 +6,7 @@ import { cambiarEstado, actualizarFechaPago } from '@/lib/negocios';
 import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
+import UsuariosSeccion from './UsuariosSeccion';
 
 interface Props {
   negocio: Negocio;
@@ -151,10 +152,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
           </div>
         </section>
 
-        <section className="border-t border-slate-200 pt-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Usuarios activos</h3>
-          <p className="text-2xl font-semibold text-slate-900">{negocio.cantidad_usuarios}</p>
-        </section>
+        <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />
 
         {pendienteConfirmar && (
           <ConfirmModal
