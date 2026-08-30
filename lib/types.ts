@@ -17,3 +17,22 @@ export interface MiCuenta {
   usuario: string;
   nombre: string;
 }
+
+export type Rol = 'admin' | 'cajero';
+
+export interface UsuarioNegocio {
+  usuario_id: string;
+  usuario: string;
+  nombre: string | null;
+  rol: Rol;
+  activo: boolean;
+}
+
+export interface AuditoriaEntry {
+  ocurrido_en: string;
+  superadmin_nombre: string;
+  accion: string;
+  negocio_nombre: string;
+  usuario_afectado: string;
+  detalle: string | null;
+}
