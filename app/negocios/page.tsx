@@ -78,7 +78,7 @@ function ListaNegocios() {
   }, [negocios, seleccionado]);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-900">Negocios</h1>
         <button
@@ -98,45 +98,71 @@ function ListaNegocios() {
       ) : ordenados.length === 0 ? (
         <p className="text-sm text-slate-500">Todavía no hay negocios registrados.</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Negocio</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Próximo pago</th>
-                <th className="px-4 py-3 font-medium">Usuarios</th>
-                <th className="px-4 py-3 font-medium">Nota interna</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {ordenados.map((negocio) => (
-                <tr key={negocio.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{negocio.nombre}</td>
-                  <td className="px-4 py-3">
-                    <EstadoBadge estado={negocio.estado} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <AvisoPago negocio={negocio} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{negocio.cantidad_usuarios}</td>
-                  <td className="max-w-xs truncate px-4 py-3 text-slate-500">
-                    {negocio.estado_nota || '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => setSeleccionado(negocio)}
-                      className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                    >
-                      Administrar
-                    </button>
-                  </td>
+        <>
+          <div className="space-y-3 sm:hidden">
+            {ordenados.map((negocio) => (
+              <button
+                key={negocio.id}
+                onClick={() => setSeleccionado(negocio)}
+                className="block w-full rounded-lg border border-slate-200 bg-white p-4 text-left hover:bg-slate-50"
+              >
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <span className="font-medium text-slate-900">{negocio.nombre}</span>
+                  <EstadoBadge estado={negocio.estado} />
+                </div>
+                <div className="mb-1">
+                  <AvisoPago negocio={negocio} />
+                </div>
+                <div className="text-sm text-slate-500">
+                  {negocio.cantidad_usuarios} usuario{negocio.cantidad_usuarios === 1 ? '' : 's'}
+                </div>
+                {negocio.estado_nota && (
+                  <div className="mt-1 truncate text-sm text-slate-500">{negocio.estado_nota}</div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-lg border border-slate-200 bg-white sm:block">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Negocio</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Próximo pago</th>
+                  <th className="px-4 py-3 font-medium">Usuarios</th>
+                  <th className="px-4 py-3 font-medium">Nota interna</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {ordenados.map((negocio) => (
+                  <tr key={negocio.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-900">{negocio.nombre}</td>
+                    <td className="px-4 py-3">
+                      <EstadoBadge estado={negocio.estado} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <AvisoPago negocio={negocio} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{negocio.cantidad_usuarios}</td>
+                    <td className="max-w-xs truncate px-4 py-3 text-slate-500">
+                      {negocio.estado_nota || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => setSeleccionado(negocio)}
+                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                      >
+                        Administrar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {seleccionado && (
