@@ -11,6 +11,10 @@ export interface Negocio {
   usa_costos: boolean;
   cantidad_usuarios: number;
   creado_en: string;
+  precio_mensual: number | null;
+  limite_usuarios: number;
+  limite_productos: number | null;
+  cantidad_productos: number;
 }
 
 export interface MiCuenta {
