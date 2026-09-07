@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import type { Estado, Negocio } from '@/lib/types';
-import { cambiarEstado, actualizarFechaPago } from '@/lib/negocios';
+import {
+  cambiarEstado,
+  actualizarFechaPago,
+  actualizarPrecio,
+  actualizarLimiteUsuarios,
+  actualizarLimiteProductos,
+} from '@/lib/negocios';
 import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
@@ -24,9 +30,15 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<Estado>(negocio.estado);
   const [nota, setNota] = useState(negocio.estado_nota ?? '');
   const [fechaPago, setFechaPago] = useState(negocio.fecha_proximo_pago ?? '');
+  const [precio, setPrecio] = useState(negocio.precio_mensual?.toString() ?? '');
+  const [limiteUsuarios, setLimiteUsuarios] = useState(negocio.limite_usuarios.toString());
+  const [limiteProductos, setLimiteProductos] = useState(negocio.limite_productos?.toString() ?? '');
   const [pendienteConfirmar, setPendienteConfirmar] = useState<Estado | null>(null);
   const [guardandoEstado, setGuardandoEstado] = useState(false);
   const [guardandoFecha, setGuardandoFecha] = useState(false);
+  const [guardandoPrecio, setGuardandoPrecio] = useState(false);
+  const [guardandoLimiteUsuarios, setGuardandoLimiteUsuarios] = useState(false);
+  const [guardandoLimiteProductos, setGuardandoLimiteProductos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -68,6 +80,54 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
       setError(err?.message ?? 'No se pudo actualizar la fecha');
     } finally {
       setGuardandoFecha(false);
+    }
+  }
+
+  async function guardarPrecio() {
+    setError(null);
+    setAviso(null);
+    setGuardandoPrecio(true);
+    try {
+      await actualizarPrecio(negocio.id, precio.trim() === '' ? null : Number(precio));
+      setAviso('Precio mensual actualizado.');
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar el precio');
+    } finally {
+      setGuardandoPrecio(false);
+    }
+  }
+
+  async function guardarLimiteUsuarios() {
+    setError(null);
+    setAviso(null);
+    setGuardandoLimiteUsuarios(true);
+    try {
+      await actualizarLimiteUsuarios(negocio.id, Number(limiteUsuarios));
+      setAviso('Límite de usuarios actualizado.');
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar el límite de usuarios');
+    } finally {
+      setGuardandoLimiteUsuarios(false);
+    }
+  }
+
+  async function guardarLimiteProductos() {
+    setError(null);
+    setAviso(null);
+    setGuardandoLimiteProductos(true);
+    try {
+      await actualizarLimiteProductos(
+        negocio.id,
+        limiteProductos.trim() === '' ? null : Number(limiteProductos),
+      );
+      setAviso('Límite de productos actualizado.');
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar el límite de productos');
+    } finally {
+      setGuardandoLimiteProductos(false);
     }
   }
 
@@ -150,6 +210,76 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
               {guardandoFecha ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
+        </section>
+
+        <section className="mb-6 border-t border-slate-200 pt-6">
+          <h3 className="mb-2 text-sm font-medium text-slate-700">Facturación y límites</h3>
+
+          <label className="mb-1 block text-sm text-slate-600">Precio mensual (USD)</label>
+          <div className="mb-4 flex gap-2">
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+              placeholder="Sin definir"
+              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+            <button
+              onClick={guardarPrecio}
+              disabled={guardandoPrecio}
+              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {guardandoPrecio ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+
+          <label className="mb-1 block text-sm text-slate-600">Límite de usuarios</label>
+          <div className="mb-4 flex gap-2">
+            <input
+              type="number"
+              min={1}
+              step="1"
+              value={limiteUsuarios}
+              onChange={(e) => setLimiteUsuarios(e.target.value)}
+              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+            <button
+              onClick={guardarLimiteUsuarios}
+              disabled={guardandoLimiteUsuarios || limiteUsuarios.trim() === ''}
+              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {guardandoLimiteUsuarios ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+
+          <label className="mb-1 block text-sm text-slate-600">Límite de productos</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={1}
+              step="1"
+              value={limiteProductos}
+              onChange={(e) => setLimiteProductos(e.target.value)}
+              placeholder="Sin límite"
+              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+            <button
+              onClick={guardarLimiteProductos}
+              disabled={guardandoLimiteProductos}
+              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {guardandoLimiteProductos ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-slate-400">
+            Todavía no se hace cumplir automáticamente. Es solo referencia.
+          </p>
+
+          <p className="mt-4 text-sm text-slate-600">
+            Productos cargados: <span className="font-medium text-slate-900">{negocio.cantidad_productos}</span>
+          </p>
         </section>
 
         <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />

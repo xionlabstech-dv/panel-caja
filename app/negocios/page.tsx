@@ -114,7 +114,9 @@ function ListaNegocios() {
                   <AvisoPago negocio={negocio} />
                 </div>
                 <div className="text-sm text-slate-500">
-                  {negocio.cantidad_usuarios} usuario{negocio.cantidad_usuarios === 1 ? '' : 's'}
+                  {negocio.cantidad_usuarios} usuario{negocio.cantidad_usuarios === 1 ? '' : 's'} ·{' '}
+                  {negocio.cantidad_productos} producto{negocio.cantidad_productos === 1 ? '' : 's'}
+                  {negocio.precio_mensual != null && ` · $${negocio.precio_mensual}/mes`}
                 </div>
                 {negocio.estado_nota && (
                   <div className="mt-1 truncate text-sm text-slate-500">{negocio.estado_nota}</div>
@@ -130,7 +132,9 @@ function ListaNegocios() {
                   <th className="px-4 py-3 font-medium">Negocio</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3 font-medium">Próximo pago</th>
+                  <th className="px-4 py-3 font-medium">Precio</th>
                   <th className="px-4 py-3 font-medium">Usuarios</th>
+                  <th className="px-4 py-3 font-medium">Productos</th>
                   <th className="px-4 py-3 font-medium">Nota interna</th>
                   <th className="px-4 py-3"></th>
                 </tr>
@@ -145,7 +149,11 @@ function ListaNegocios() {
                     <td className="px-4 py-3">
                       <AvisoPago negocio={negocio} />
                     </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {negocio.precio_mensual != null ? `$${negocio.precio_mensual}` : '—'}
+                    </td>
                     <td className="px-4 py-3 text-slate-600">{negocio.cantidad_usuarios}</td>
+                    <td className="px-4 py-3 text-slate-600">{negocio.cantidad_productos}</td>
                     <td className="max-w-xs truncate px-4 py-3 text-slate-500">
                       {negocio.estado_nota || '—'}
                     </td>

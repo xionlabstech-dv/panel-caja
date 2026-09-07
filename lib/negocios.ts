@@ -23,3 +23,27 @@ export async function actualizarFechaPago(negocioId: string, fecha: string) {
   });
   if (error) throw error;
 }
+
+export async function actualizarPrecio(negocioId: string, precio: number | null) {
+  const { error } = await supabase.rpc('panel_actualizar_precio', {
+    p_negocio_id: negocioId,
+    p_precio: precio,
+  });
+  if (error) throw error;
+}
+
+export async function actualizarLimiteUsuarios(negocioId: string, limite: number) {
+  const { error } = await supabase.rpc('panel_actualizar_limite_usuarios', {
+    p_negocio_id: negocioId,
+    p_limite: limite,
+  });
+  if (error) throw error;
+}
+
+export async function actualizarLimiteProductos(negocioId: string, limite: number | null) {
+  const { error } = await supabase.rpc('panel_actualizar_limite_productos', {
+    p_negocio_id: negocioId,
+    p_limite: limite,
+  });
+  if (error) throw error;
+}
