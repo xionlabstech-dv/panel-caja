@@ -15,6 +15,7 @@ export interface Negocio {
   limite_usuarios: number;
   limite_productos: number | null;
   cantidad_productos: number;
+  es_prueba: boolean;
 }
 
 export interface MiCuenta {

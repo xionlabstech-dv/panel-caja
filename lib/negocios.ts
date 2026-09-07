@@ -47,3 +47,11 @@ export async function actualizarLimiteProductos(negocioId: string, limite: numbe
   });
   if (error) throw error;
 }
+
+export async function resetearDatosPrueba(negocioId: string, confirmarNombre: string) {
+  const { error } = await supabase.rpc('panel_resetear_datos_prueba', {
+    p_negocio_id: negocioId,
+    p_confirmar_nombre: confirmarNombre,
+  });
+  if (error) throw error;
+}

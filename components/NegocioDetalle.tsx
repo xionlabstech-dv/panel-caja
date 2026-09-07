@@ -13,6 +13,7 @@ import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
 import UsuariosSeccion from './UsuariosSeccion';
+import ResetearDatosPruebaModal from './ResetearDatosPruebaModal';
 
 interface Props {
   negocio: Negocio;
@@ -41,6 +42,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
   const [guardandoLimiteProductos, setGuardandoLimiteProductos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [mostrarResetearPrueba, setMostrarResetearPrueba] = useState(false);
 
   async function aplicarCambioEstado(estado: Estado) {
     setError(null);
@@ -283,6 +285,36 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
         </section>
 
         <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />
+
+        {negocio.es_prueba === true && (
+          <section className="mb-6 border-t border-red-200 pt-6">
+            <h3 className="mb-2 text-sm font-medium text-red-700">Zona peligrosa</h3>
+            <p className="mb-3 text-xs text-slate-500">
+              Esta es una cuenta de prueba. Podés borrar su historial transaccional para seguir
+              probando sin arrastrar datos viejos.
+            </p>
+            <button
+              onClick={() => setMostrarResetearPrueba(true)}
+              className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+            >
+              Resetear datos de prueba
+            </button>
+          </section>
+        )}
+
+        {mostrarResetearPrueba && (
+          <ResetearDatosPruebaModal
+            negocioId={negocio.id}
+            negocioNombre={negocio.nombre}
+            onCerrar={() => setMostrarResetearPrueba(false)}
+            onListo={() => {
+              setAviso(
+                `Datos de prueba reseteados: se borraron ventas, presupuestos, movimientos de stock, cierres y fiado. Los productos y usuarios de ${negocio.nombre} no se tocaron.`,
+              );
+              onActualizado();
+            }}
+          />
+        )}
 
         {pendienteConfirmar && (
           <ConfirmModal
