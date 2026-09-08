@@ -157,6 +157,13 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
           </div>
         )}
 
+        <p className="mb-6 text-sm text-slate-600">
+          Nombre comercial:{' '}
+          <span className="font-medium text-slate-900">
+            {negocio.nombre_comercial ?? 'Sin definir'}
+          </span>
+        </p>
+
         <section className="mb-6">
           <h3 className="mb-2 text-sm font-medium text-slate-700">Estado del servicio</h3>
           <div className="flex gap-2">
