@@ -8,6 +8,7 @@ import {
   actualizarPrecio,
   actualizarLimiteUsuarios,
   actualizarLimiteProductos,
+  actualizarEsPrueba,
 } from '@/lib/negocios';
 import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
@@ -43,6 +44,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [mostrarResetearPrueba, setMostrarResetearPrueba] = useState(false);
+  const [guardandoEsPrueba, setGuardandoEsPrueba] = useState(false);
 
   async function aplicarCambioEstado(estado: Estado) {
     setError(null);
@@ -130,6 +132,21 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
       setError(err?.message ?? 'No se pudo actualizar el límite de productos');
     } finally {
       setGuardandoLimiteProductos(false);
+    }
+  }
+
+  async function toggleEsPrueba() {
+    setError(null);
+    setAviso(null);
+    setGuardandoEsPrueba(true);
+    try {
+      await actualizarEsPrueba(negocio.id, !negocio.es_prueba);
+      setAviso(negocio.es_prueba ? 'Ya no es una cuenta de prueba.' : 'Marcada como cuenta de prueba.');
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar la cuenta de prueba');
+    } finally {
+      setGuardandoEsPrueba(false);
     }
   }
 
@@ -292,6 +309,33 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
         </section>
 
         <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />
+
+        <section className="mb-6 border-t border-slate-200 pt-6">
+          <h3 className="mb-2 text-sm font-medium text-slate-700">Cuenta de prueba</h3>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-600">
+              {negocio.es_prueba
+                ? 'Esta cuenta está marcada como de prueba.'
+                : 'Esta cuenta no está marcada como de prueba.'}
+            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={negocio.es_prueba}
+              onClick={toggleEsPrueba}
+              disabled={guardandoEsPrueba}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                negocio.es_prueba ? 'bg-slate-900' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                  negocio.es_prueba ? 'translate-x-[22px]' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </section>
 
         {negocio.es_prueba === true && (
           <section className="mb-6 border-t border-red-200 pt-6">

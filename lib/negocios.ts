@@ -55,3 +55,11 @@ export async function resetearDatosPrueba(negocioId: string, confirmarNombre: st
   });
   if (error) throw error;
 }
+
+export async function actualizarEsPrueba(negocioId: string, esPrueba: boolean) {
+  const { error } = await supabase.rpc('panel_actualizar_es_prueba', {
+    p_negocio_id: negocioId,
+    p_es_prueba: esPrueba,
+  });
+  if (error) throw error;
+}
