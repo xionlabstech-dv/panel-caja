@@ -6,8 +6,9 @@ import NavBar from '@/components/NavBar';
 import EstadoBadge from '@/components/EstadoBadge';
 import NegocioDetalle from '@/components/NegocioDetalle';
 import { listarNegocios } from '@/lib/negocios';
-import { diasHasta, formatearFecha } from '@/lib/fechas';
+import { diasHasta, formatearFecha, formatearFechaHora } from '@/lib/fechas';
 import type { Negocio } from '@/lib/types';
+import type { EliminarNegocioResultado } from '@/lib/edgeFunctions';
 
 function urgenciaPago(negocio: Negocio): 0 | 1 | 2 {
   const dias = diasHasta(negocio.fecha_proximo_pago);
@@ -45,6 +46,7 @@ function ListaNegocios() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seleccionado, setSeleccionado] = useState<Negocio | null>(null);
+  const [avisoEliminacion, setAvisoEliminacion] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setError(null);
@@ -77,6 +79,16 @@ function ListaNegocios() {
     if (actualizado) setSeleccionado(actualizado);
   }, [negocios, seleccionado]);
 
+  function onEliminado(negocioNombre: string, resultado: EliminarNegocioResultado) {
+    setSeleccionado(null);
+    const partes = [`"${negocioNombre}" fue eliminado por completo.`];
+    if (resultado.advertencias.length > 0) {
+      partes.push(...resultado.advertencias);
+    }
+    setAvisoEliminacion(partes.join(' '));
+    cargar();
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
@@ -91,6 +103,11 @@ function ListaNegocios() {
 
       {error && (
         <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+      )}
+      {avisoEliminacion && (
+        <div className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          {avisoEliminacion}
+        </div>
       )}
 
       {cargando ? (
@@ -121,6 +138,11 @@ function ListaNegocios() {
                 {negocio.estado_nota && (
                   <div className="mt-1 truncate text-sm text-slate-500">{negocio.estado_nota}</div>
                 )}
+                {negocio.solicitud_eliminacion_en && (
+                  <div className="mt-1 text-sm font-medium text-amber-700">
+                    Pidió cerrar la cuenta el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -142,7 +164,14 @@ function ListaNegocios() {
               <tbody className="divide-y divide-slate-100">
                 {ordenados.map((negocio) => (
                   <tr key={negocio.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">{negocio.nombre}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">
+                      {negocio.nombre}
+                      {negocio.solicitud_eliminacion_en && (
+                        <div className="mt-0.5 text-xs font-medium text-amber-700">
+                          Pidió cerrar el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <EstadoBadge estado={negocio.estado} />
                     </td>
@@ -178,6 +207,7 @@ function ListaNegocios() {
           negocio={seleccionado}
           onCerrar={() => setSeleccionado(null)}
           onActualizado={cargar}
+          onEliminado={(resultado) => onEliminado(seleccionado.nombre, resultado)}
         />
       )}
     </div>

@@ -15,11 +15,14 @@ import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
 import UsuariosSeccion from './UsuariosSeccion';
 import ResetearDatosPruebaModal from './ResetearDatosPruebaModal';
+import EliminarNegocioModal from './EliminarNegocioModal';
+import type { EliminarNegocioResultado } from '@/lib/edgeFunctions';
 
 interface Props {
   negocio: Negocio;
   onCerrar: () => void;
   onActualizado: () => void;
+  onEliminado: (resultado: EliminarNegocioResultado) => void;
 }
 
 const ESTADOS: { valor: Estado; etiqueta: string }[] = [
@@ -28,7 +31,7 @@ const ESTADOS: { valor: Estado; etiqueta: string }[] = [
   { valor: 'suspendido', etiqueta: 'Suspendido' },
 ];
 
-export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Props) {
+export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEliminado }: Props) {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<Estado>(negocio.estado);
   const [nota, setNota] = useState(negocio.estado_nota ?? '');
   const [fechaPago, setFechaPago] = useState(negocio.fecha_proximo_pago ?? '');
@@ -45,6 +48,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
   const [aviso, setAviso] = useState<string | null>(null);
   const [mostrarResetearPrueba, setMostrarResetearPrueba] = useState(false);
   const [guardandoEsPrueba, setGuardandoEsPrueba] = useState(false);
+  const [mostrarEliminar, setMostrarEliminar] = useState(false);
 
   async function aplicarCambioEstado(estado: Estado) {
     setError(null);
@@ -180,6 +184,12 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
             {negocio.nombre_comercial ?? 'Sin definir'}
           </span>
         </p>
+
+        {negocio.solicitud_eliminacion_en && (
+          <div className="mb-6 rounded-md bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+            Pidió cerrar la cuenta el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
+          </div>
+        )}
 
         <section className="mb-6">
           <h3 className="mb-2 text-sm font-medium text-slate-700">Estado del servicio</h3>
@@ -337,21 +347,37 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
           </div>
         </section>
 
-        {negocio.es_prueba === true && (
-          <section className="mb-6 border-t border-red-200 pt-6">
-            <h3 className="mb-2 text-sm font-medium text-red-700">Zona peligrosa</h3>
+        <section className="mb-6 border-t border-red-200 pt-6">
+          <h3 className="mb-2 text-sm font-medium text-red-700">Zona peligrosa</h3>
+
+          {negocio.es_prueba === true && (
+            <div className="mb-4">
+              <p className="mb-3 text-xs text-slate-500">
+                Esta es una cuenta de prueba. Podés borrar su historial transaccional para seguir
+                probando sin arrastrar datos viejos.
+              </p>
+              <button
+                onClick={() => setMostrarResetearPrueba(true)}
+                className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+              >
+                Resetear datos de prueba
+              </button>
+            </div>
+          )}
+
+          <div className={negocio.es_prueba === true ? 'border-t border-red-100 pt-4' : ''}>
             <p className="mb-3 text-xs text-slate-500">
-              Esta es una cuenta de prueba. Podés borrar su historial transaccional para seguir
-              probando sin arrastrar datos viejos.
+              Elimina el negocio por completo: datos y usuarios, para siempre. No se puede
+              deshacer. Distinto del reset de datos de prueba, que conserva productos y usuarios.
             </p>
             <button
-              onClick={() => setMostrarResetearPrueba(true)}
-              className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+              onClick={() => setMostrarEliminar(true)}
+              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
             >
-              Resetear datos de prueba
+              Eliminar cuenta
             </button>
-          </section>
-        )}
+          </div>
+        </section>
 
         {mostrarResetearPrueba && (
           <ResetearDatosPruebaModal
@@ -363,6 +389,19 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado }: Pro
                 `Datos de prueba reseteados: se borraron ventas, presupuestos, movimientos de stock, cierres y fiado. Los productos y usuarios de ${negocio.nombre} no se tocaron.`,
               );
               onActualizado();
+            }}
+          />
+        )}
+
+        {mostrarEliminar && (
+          <EliminarNegocioModal
+            negocioId={negocio.id}
+            negocioNombre={negocio.nombre}
+            solicitudEliminacionEn={negocio.solicitud_eliminacion_en}
+            onCerrar={() => setMostrarEliminar(false)}
+            onEliminado={(resultado) => {
+              setMostrarEliminar(false);
+              onEliminado(resultado);
             }}
           />
         )}
