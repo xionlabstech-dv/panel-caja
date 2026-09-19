@@ -17,6 +17,7 @@ export interface Negocio {
   cantidad_productos: number;
   es_prueba: boolean;
   nombre_comercial: string | null;
+  solicitud_eliminacion_en: string | null;
 }
 
 export interface MiCuenta {
