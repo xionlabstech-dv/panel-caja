@@ -1,3 +1,8 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,6 +13,67 @@ body {
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--superficie);
+  color: var(--texto);
+}
+
+:root {
+  --marca: #04875A;
+  --marca-presion: #036B48;
+  --marca-suave: #E7F6EF;
+  --marca-suave-texto: #036B48;
+  --foco: #18AC79;
+
+  --superficie: #F9FAFB;
+  --superficie-barra: #FFFFFF;
+  --tarjeta: #FFFFFF;
+  --tarjeta-hundida: #F3F4F6;
+
+  --borde-campo: #E5E7EB;
+  --borde-divisor: #9CA3AF;
+
+  --texto: #111827;
+  --texto-2: #374151;
+  --texto-3: #6B7280;
+  --texto-4: #9CA3AF;
+  --texto-invertido: #FFFFFF;
+
+  --negativo: #DC2626;
+  --negativo-fondo: #FEF2F2;
+  --negativo-borde: #FEE2E2;
+  --aviso: #B45309;
+  --aviso-fondo: #FFFBEB;
+  --informativo: #1D4ED8;
+  --informativo-fondo: #EFF6FF;
+
+  --overlay: rgba(0, 0, 0, .4);
+}
+
+.dark {
+  --marca: #0A9A66;
+  --marca-presion: #04875A;
+  --marca-suave: rgba(10, 154, 102, .14);
+  --marca-suave-texto: #4FC298;
+
+  --superficie: #0F172A;
+  --superficie-barra: #1E293B;
+  --tarjeta: #1E293B;
+  --tarjeta-hundida: #334155;
+
+  --borde-campo: #475569;
+  --borde-divisor: #64748B;
+
+  --texto: #F1F5F9;
+  --texto-2: #CBD5E1;
+  --texto-3: #94A3B8;
+  --texto-4: #64748B;
+
+  --negativo: #FCA5A5;
+  --negativo-fondo: rgba(239, 68, 68, .1);
+  --negativo-borde: rgba(239, 68, 68, .3);
+  --aviso: #FCD34D;
+  --aviso-fondo: rgba(180, 83, 9, .2);
+  --informativo: #93C5FD;
+  --informativo-fondo: rgba(29, 78, 216, .22);
 }

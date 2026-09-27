@@ -4,6 +4,8 @@ import { useState } from 'react';
 import RequireAuth from '@/components/RequireAuth';
 import NavBar from '@/components/NavBar';
 import { crearNegocioConAdmin } from '@/lib/edgeFunctions';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 function FormularioCrearNegocio() {
   const [nombreNegocio, setNombreNegocio] = useState('');
@@ -33,66 +35,57 @@ function FormularioCrearNegocio() {
 
   return (
     <div className="mx-auto max-w-lg px-6 py-8">
-      <h1 className="mb-6 text-xl font-semibold text-slate-900">Crear negocio</h1>
+      <h1 className="mb-6 text-xl font-semibold text-texto">Crear negocio</h1>
 
-      <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-6">
+      <form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-borde-campo bg-tarjeta p-6">
         {error && (
-          <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+          <div className="rounded-md bg-negativo-fondo px-3 py-2 text-sm text-negativo">{error}</div>
         )}
         {exito && (
-          <div className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{exito}</div>
+          <div className="rounded-md bg-marca-suave px-3 py-2 text-sm text-marca-suave-texto">{exito}</div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Nombre del negocio</label>
-          <input
-            type="text"
-            value={nombreNegocio}
-            onChange={(e) => setNombreNegocio(e.target.value)}
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
+        <Input
+          label="Nombre del negocio"
+          type="text"
+          value={nombreNegocio}
+          onChange={(e) => setNombreNegocio(e.target.value)}
+          required
+        />
 
-        <div className="border-t border-slate-200 pt-4">
-          <p className="mb-3 text-sm font-medium text-slate-700">Primer usuario admin</p>
+        <div className="border-t border-borde-divisor pt-4">
+          <p className="mb-3 text-sm font-medium text-texto-2">Primer usuario admin</p>
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm text-slate-600">Usuario</label>
-              <input
+              <Input
+                label="Usuario"
                 type="text"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 required
                 placeholder="ej: mayga1"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-texto-4">
                 Mínimo 3 caracteres. Solo letras, números, guiones, puntos y guión bajo.
               </p>
             </div>
             <div>
-              <label className="mb-1 block text-sm text-slate-600">Contraseña</label>
-              <input
+              <Input
+                label="Contraseña"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
               />
-              <p className="mt-1 text-xs text-slate-400">Mínimo 8 caracteres.</p>
+              <p className="mt-1 text-xs text-texto-4">Mínimo 8 caracteres.</p>
             </div>
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={cargando}
-          className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={cargando} className="w-full">
           {cargando ? 'Creando...' : 'Crear negocio'}
-        </button>
+        </Button>
       </form>
     </div>
   );

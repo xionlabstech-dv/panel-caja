@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body className="font-caja bg-superficie text-texto">{children}</body>
     </html>
   );
 }
