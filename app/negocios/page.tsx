@@ -21,11 +21,11 @@ function urgenciaPago(negocio: Negocio): 0 | 1 | 2 {
 function AvisoPago({ negocio }: { negocio: Negocio }) {
   const dias = diasHasta(negocio.fecha_proximo_pago);
   if (dias === null) {
-    return <span className="text-sm text-slate-400">Sin fecha</span>;
+    return <span className="text-sm text-texto-4">Sin fecha</span>;
   }
   if (dias < 0) {
     return (
-      <span className="text-sm font-medium text-red-600">
+      <span className="text-sm font-medium text-negativo">
         {formatearFecha(negocio.fecha_proximo_pago)} · vencido hace {Math.abs(dias)} día
         {Math.abs(dias) === 1 ? '' : 's'}
       </span>
@@ -33,12 +33,12 @@ function AvisoPago({ negocio }: { negocio: Negocio }) {
   }
   if (dias <= 5) {
     return (
-      <span className="text-sm font-medium text-amber-600">
+      <span className="text-sm font-medium text-aviso">
         {formatearFecha(negocio.fecha_proximo_pago)} · en {dias} día{dias === 1 ? '' : 's'}
       </span>
     );
   }
-  return <span className="text-sm text-slate-600">{formatearFecha(negocio.fecha_proximo_pago)}</span>;
+  return <span className="text-sm text-texto-3">{formatearFecha(negocio.fecha_proximo_pago)}</span>;
 }
 
 function ListaNegocios() {
@@ -92,28 +92,28 @@ function ListaNegocios() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Negocios</h1>
+        <h1 className="text-xl font-semibold text-texto">Negocios</h1>
         <button
           onClick={cargar}
-          className="text-sm text-slate-500 hover:text-slate-800"
+          className="text-sm text-texto-3 hover:text-texto"
         >
           Actualizar
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-4 rounded-md bg-negativo-fondo px-3 py-2 text-sm text-negativo">{error}</div>
       )}
       {avisoEliminacion && (
-        <div className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="mb-4 rounded-md bg-marca-suave px-3 py-2 text-sm text-marca-suave-texto">
           {avisoEliminacion}
         </div>
       )}
 
       {cargando ? (
-        <p className="text-sm text-slate-500">Cargando...</p>
+        <p className="text-sm text-texto-3">Cargando...</p>
       ) : ordenados.length === 0 ? (
-        <p className="text-sm text-slate-500">Todavía no hay negocios registrados.</p>
+        <p className="text-sm text-texto-3">Todavía no hay negocios registrados.</p>
       ) : (
         <>
           <div className="space-y-3 sm:hidden">
@@ -121,25 +121,25 @@ function ListaNegocios() {
               <button
                 key={negocio.id}
                 onClick={() => setSeleccionado(negocio)}
-                className="block w-full rounded-lg border border-slate-200 bg-white p-4 text-left hover:bg-slate-50"
+                className="block w-full rounded-lg border border-borde-campo bg-tarjeta p-4 text-left hover:bg-tarjeta-hundida"
               >
                 <div className="mb-2 flex items-start justify-between gap-2">
-                  <span className="font-medium text-slate-900">{negocio.nombre}</span>
+                  <span className="font-medium text-texto">{negocio.nombre}</span>
                   <EstadoBadge estado={negocio.estado} />
                 </div>
                 <div className="mb-1">
                   <AvisoPago negocio={negocio} />
                 </div>
-                <div className="text-sm text-slate-500">
+                <div className="text-sm text-texto-3">
                   {negocio.cantidad_usuarios} usuario{negocio.cantidad_usuarios === 1 ? '' : 's'} ·{' '}
                   {negocio.cantidad_productos} producto{negocio.cantidad_productos === 1 ? '' : 's'}
                   {negocio.precio_mensual != null && ` · $${negocio.precio_mensual}/mes`}
                 </div>
                 {negocio.estado_nota && (
-                  <div className="mt-1 truncate text-sm text-slate-500">{negocio.estado_nota}</div>
+                  <div className="mt-1 truncate text-sm text-texto-3">{negocio.estado_nota}</div>
                 )}
                 {negocio.solicitud_eliminacion_en && (
-                  <div className="mt-1 text-sm font-medium text-amber-700">
+                  <div className="mt-1 text-sm font-medium text-aviso">
                     Pidió cerrar la cuenta el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
                   </div>
                 )}
@@ -147,9 +147,9 @@ function ListaNegocios() {
             ))}
           </div>
 
-          <div className="hidden overflow-hidden rounded-lg border border-slate-200 bg-white sm:block">
+          <div className="hidden overflow-hidden rounded-lg border border-borde-campo bg-tarjeta sm:block">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="border-b border-borde-divisor bg-tarjeta-hundida text-xs uppercase text-texto-3">
                 <tr>
                   <th className="px-4 py-3 font-medium">Negocio</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
@@ -161,13 +161,13 @@ function ListaNegocios() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-borde-divisor">
                 {ordenados.map((negocio) => (
-                  <tr key={negocio.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">
+                  <tr key={negocio.id} className="hover:bg-tarjeta-hundida">
+                    <td className="px-4 py-3 font-medium text-texto">
                       {negocio.nombre}
                       {negocio.solicitud_eliminacion_en && (
-                        <div className="mt-0.5 text-xs font-medium text-amber-700">
+                        <div className="mt-0.5 text-xs font-medium text-aviso">
                           Pidió cerrar el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
                         </div>
                       )}
@@ -178,18 +178,18 @@ function ListaNegocios() {
                     <td className="px-4 py-3">
                       <AvisoPago negocio={negocio} />
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-texto-3">
                       {negocio.precio_mensual != null ? `$${negocio.precio_mensual}` : '—'}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{negocio.cantidad_usuarios}</td>
-                    <td className="px-4 py-3 text-slate-600">{negocio.cantidad_productos}</td>
-                    <td className="max-w-xs truncate px-4 py-3 text-slate-500">
+                    <td className="px-4 py-3 text-texto-3">{negocio.cantidad_usuarios}</td>
+                    <td className="px-4 py-3 text-texto-3">{negocio.cantidad_productos}</td>
+                    <td className="max-w-xs truncate px-4 py-3 text-texto-3">
                       {negocio.estado_nota || '—'}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => setSeleccionado(negocio)}
-                        className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                        className="text-sm font-medium text-texto-2 hover:text-texto"
                       >
                         Administrar
                       </button>

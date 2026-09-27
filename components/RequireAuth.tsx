@@ -44,7 +44,7 @@ export default function RequireAuth({ children }: Props) {
 
   if (cargando || !cuenta) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-superficie text-texto-3">
         Verificando sesión...
       </div>
     );

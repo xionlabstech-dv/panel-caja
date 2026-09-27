@@ -1,9 +1,9 @@
 import type { Estado } from '@/lib/types';
 
 const estilos: Record<Estado, string> = {
-  activo: 'bg-emerald-100 text-emerald-800',
-  restringido: 'bg-amber-100 text-amber-800',
-  suspendido: 'bg-red-100 text-red-800',
+  activo: 'bg-marca-suave text-marca-suave-texto',
+  restringido: 'bg-aviso-fondo text-aviso',
+  suspendido: 'bg-negativo-fondo text-negativo',
 };
 
 const etiquetas: Record<Estado, string> = {
