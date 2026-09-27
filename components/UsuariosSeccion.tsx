@@ -36,50 +36,50 @@ export default function UsuariosSeccion({ negocioId, negocioNombre }: Props) {
   }, [cargar]);
 
   return (
-    <section className="border-t border-slate-200 pt-6">
-      <h3 className="mb-2 text-sm font-medium text-slate-700">Usuarios</h3>
+    <section className="border-t border-borde-divisor pt-6">
+      <h3 className="mb-2 text-sm font-medium text-texto-2">Usuarios</h3>
 
       {error && (
-        <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-3 rounded-md bg-negativo-fondo px-3 py-2 text-sm text-negativo">{error}</div>
       )}
       {aviso && (
-        <div className="mb-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="mb-3 rounded-md bg-marca-suave px-3 py-2 text-sm text-marca-suave-texto">
           {aviso}
         </div>
       )}
 
       {cargando ? (
-        <p className="text-sm text-slate-500">Cargando...</p>
+        <p className="text-sm text-texto-3">Cargando...</p>
       ) : usuarios.length === 0 ? (
-        <p className="text-sm text-slate-500">Este negocio todavía no tiene usuarios.</p>
+        <p className="text-sm text-texto-3">Este negocio todavía no tiene usuarios.</p>
       ) : (
-        <ul className="divide-y divide-slate-100 rounded-md border border-slate-200">
+        <ul className="divide-y divide-borde-divisor rounded-md border border-borde-campo">
           {usuarios.map((usuario) => (
             <li key={usuario.usuario_id} className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-sm font-medium text-slate-900">{usuario.usuario}</span>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  <span className="truncate text-sm font-medium text-texto">{usuario.usuario}</span>
+                  <span className="rounded-full bg-tarjeta-hundida px-2 py-0.5 text-xs text-texto-2">
                     {usuario.rol === 'admin' ? 'Admin' : 'Cajero'}
                   </span>
                   {!usuario.activo && (
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                    <span className="rounded-full bg-negativo-fondo px-2 py-0.5 text-xs text-negativo">
                       Inactivo
                     </span>
                   )}
                 </div>
-                {usuario.nombre && <p className="truncate text-xs text-slate-500">{usuario.nombre}</p>}
+                {usuario.nombre && <p className="truncate text-xs text-texto-3">{usuario.nombre}</p>}
               </div>
               <div className="flex shrink-0 gap-3">
                 <button
                   onClick={() => setCambiarUsuario(usuario)}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-900"
+                  className="text-xs font-medium text-texto-3 hover:text-texto"
                 >
                   Cambiar usuario
                 </button>
                 <button
                   onClick={() => setResetear(usuario)}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-900"
+                  className="text-xs font-medium text-texto-3 hover:text-texto"
                 >
                   Resetear contraseña
                 </button>

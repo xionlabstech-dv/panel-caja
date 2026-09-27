@@ -41,6 +41,7 @@ body {
 
   --negativo: #DC2626;
   --negativo-fondo: #FEF2F2;
+  --negativo-borde: #FEE2E2;
   --aviso: #B45309;
   --aviso-fondo: #FFFBEB;
   --informativo: #1D4ED8;
@@ -70,6 +71,7 @@ body {
 
   --negativo: #FCA5A5;
   --negativo-fondo: rgba(239, 68, 68, .1);
+  --negativo-borde: rgba(239, 68, 68, .3);
   --aviso: #FCD34D;
   --aviso-fondo: rgba(180, 83, 9, .2);
   --informativo: #93C5FD;

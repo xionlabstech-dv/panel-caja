@@ -34,6 +34,7 @@ module.exports = {
         negativo: {
           DEFAULT: 'var(--negativo)',
           fondo: 'var(--negativo-fondo)',
+          borde: 'var(--negativo-borde)',
         },
         aviso: {
           DEFAULT: 'var(--aviso)',

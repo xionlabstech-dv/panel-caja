@@ -17,6 +17,7 @@ import UsuariosSeccion from './UsuariosSeccion';
 import ResetearDatosPruebaModal from './ResetearDatosPruebaModal';
 import EliminarNegocioModal from './EliminarNegocioModal';
 import type { EliminarNegocioResultado } from '@/lib/edgeFunctions';
+import Button from './ui/Button';
 
 interface Props {
   negocio: Negocio;
@@ -155,44 +156,44 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/30">
-      <div className="h-full w-full max-w-md overflow-y-auto bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-40 flex justify-end bg-overlay">
+      <div className="h-full w-full max-w-md overflow-y-auto bg-tarjeta p-6 shadow-xl">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">{negocio.nombre}</h2>
+            <h2 className="text-lg font-semibold text-texto">{negocio.nombre}</h2>
             <div className="mt-1">
               <EstadoBadge estado={negocio.estado} />
             </div>
           </div>
-          <button onClick={onCerrar} className="text-slate-400 hover:text-slate-700">
+          <button onClick={onCerrar} className="text-texto-4 hover:text-texto">
             ✕
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+          <div className="mb-4 rounded-md bg-negativo-fondo px-3 py-2 text-sm text-negativo">{error}</div>
         )}
         {aviso && (
-          <div className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <div className="mb-4 rounded-md bg-marca-suave px-3 py-2 text-sm text-marca-suave-texto">
             {aviso}
           </div>
         )}
 
-        <p className="mb-6 text-sm text-slate-600">
+        <p className="mb-6 text-sm text-texto-3">
           Nombre comercial:{' '}
-          <span className="font-medium text-slate-900">
+          <span className="font-medium text-texto">
             {negocio.nombre_comercial ?? 'Sin definir'}
           </span>
         </p>
 
         {negocio.solicitud_eliminacion_en && (
-          <div className="mb-6 rounded-md bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+          <div className="mb-6 rounded-md bg-aviso-fondo px-3 py-2 text-sm font-medium text-aviso">
             Pidió cerrar la cuenta el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
           </div>
         )}
 
         <section className="mb-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Estado del servicio</h3>
+          <h3 className="mb-2 text-sm font-medium text-texto-2">Estado del servicio</h3>
           <div className="flex gap-2">
             {ESTADOS.map((e) => (
               <button
@@ -201,57 +202,53 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
                 disabled={guardandoEstado}
                 className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
                   negocio.estado === e.valor
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                    ? 'border-marca bg-marca text-texto-invertido'
+                    : 'border-borde-campo text-texto-2 hover:bg-tarjeta-hundida'
                 }`}
               >
                 {e.etiqueta}
               </button>
             ))}
           </div>
-          <label className="mb-1 mt-4 block text-sm font-medium text-slate-700">
+          <label className="mb-1 mt-4 block text-sm font-medium text-texto-2">
             Nota interna (no la ve el comercio)
           </label>
           <textarea
             value={nota}
             onChange={(e) => setNota(e.target.value)}
             rows={3}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="w-full rounded-md border border-borde-campo bg-tarjeta px-3 py-2 text-sm text-texto focus:border-foco focus:outline-none"
             placeholder="Ej: debe el mes de agosto, prometió pagar el viernes"
           />
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-texto-4">
             La nota se guarda junto con el próximo cambio de estado que apliques.
           </p>
           {negocio.estado_actualizado_en && (
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-texto-4">
               Último cambio: {formatearFechaHora(negocio.estado_actualizado_en)}
             </p>
           )}
         </section>
 
-        <section className="mb-6 border-t border-slate-200 pt-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Próximo pago</h3>
+        <section className="mb-6 border-t border-borde-divisor pt-6">
+          <h3 className="mb-2 text-sm font-medium text-texto-2">Próximo pago</h3>
           <div className="flex gap-2">
             <input
               type="date"
               value={fechaPago}
               onChange={(e) => setFechaPago(e.target.value)}
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="flex-1 rounded-md border border-borde-campo bg-tarjeta px-3 py-2 text-sm text-texto focus:border-foco focus:outline-none"
             />
-            <button
-              onClick={guardarFecha}
-              disabled={guardandoFecha || !fechaPago}
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-            >
+            <Button variante="primario" compacto onClick={guardarFecha} disabled={guardandoFecha || !fechaPago}>
               {guardandoFecha ? 'Guardando...' : 'Guardar'}
-            </button>
+            </Button>
           </div>
         </section>
 
-        <section className="mb-6 border-t border-slate-200 pt-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Facturación y límites</h3>
+        <section className="mb-6 border-t border-borde-divisor pt-6">
+          <h3 className="mb-2 text-sm font-medium text-texto-2">Facturación y límites</h3>
 
-          <label className="mb-1 block text-sm text-slate-600">Precio mensual (USD)</label>
+          <label className="mb-1 block text-sm text-texto-3">Precio mensual (USD)</label>
           <div className="mb-4 flex gap-2">
             <input
               type="number"
@@ -260,18 +257,14 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
               value={precio}
               onChange={(e) => setPrecio(e.target.value)}
               placeholder="Sin definir"
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="flex-1 rounded-md border border-borde-campo bg-tarjeta px-3 py-2 text-sm text-texto focus:border-foco focus:outline-none"
             />
-            <button
-              onClick={guardarPrecio}
-              disabled={guardandoPrecio}
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-            >
+            <Button variante="primario" compacto onClick={guardarPrecio} disabled={guardandoPrecio}>
               {guardandoPrecio ? 'Guardando...' : 'Guardar'}
-            </button>
+            </Button>
           </div>
 
-          <label className="mb-1 block text-sm text-slate-600">Límite de usuarios</label>
+          <label className="mb-1 block text-sm text-texto-3">Límite de usuarios</label>
           <div className="mb-4 flex gap-2">
             <input
               type="number"
@@ -279,18 +272,19 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
               step="1"
               value={limiteUsuarios}
               onChange={(e) => setLimiteUsuarios(e.target.value)}
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="flex-1 rounded-md border border-borde-campo bg-tarjeta px-3 py-2 text-sm text-texto focus:border-foco focus:outline-none"
             />
-            <button
+            <Button
+              variante="primario"
+              compacto
               onClick={guardarLimiteUsuarios}
               disabled={guardandoLimiteUsuarios || limiteUsuarios.trim() === ''}
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
             >
               {guardandoLimiteUsuarios ? 'Guardando...' : 'Guardar'}
-            </button>
+            </Button>
           </div>
 
-          <label className="mb-1 block text-sm text-slate-600">Límite de productos</label>
+          <label className="mb-1 block text-sm text-texto-3">Límite de productos</label>
           <div className="flex gap-2">
             <input
               type="number"
@@ -299,31 +293,27 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
               value={limiteProductos}
               onChange={(e) => setLimiteProductos(e.target.value)}
               placeholder="Sin límite"
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="flex-1 rounded-md border border-borde-campo bg-tarjeta px-3 py-2 text-sm text-texto focus:border-foco focus:outline-none"
             />
-            <button
-              onClick={guardarLimiteProductos}
-              disabled={guardandoLimiteProductos}
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-            >
+            <Button variante="primario" compacto onClick={guardarLimiteProductos} disabled={guardandoLimiteProductos}>
               {guardandoLimiteProductos ? 'Guardando...' : 'Guardar'}
-            </button>
+            </Button>
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-texto-4">
             Todavía no se hace cumplir automáticamente. Es solo referencia.
           </p>
 
-          <p className="mt-4 text-sm text-slate-600">
-            Productos cargados: <span className="font-medium text-slate-900">{negocio.cantidad_productos}</span>
+          <p className="mt-4 text-sm text-texto-3">
+            Productos cargados: <span className="font-medium text-texto">{negocio.cantidad_productos}</span>
           </p>
         </section>
 
         <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />
 
-        <section className="mb-6 border-t border-slate-200 pt-6">
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Cuenta de prueba</h3>
+        <section className="mb-6 border-t border-borde-divisor pt-6">
+          <h3 className="mb-2 text-sm font-medium text-texto-2">Cuenta de prueba</h3>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-texto-3">
               {negocio.es_prueba
                 ? 'Esta cuenta está marcada como de prueba.'
                 : 'Esta cuenta no está marcada como de prueba.'}
@@ -335,11 +325,11 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
               onClick={toggleEsPrueba}
               disabled={guardandoEsPrueba}
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                negocio.es_prueba ? 'bg-slate-900' : 'bg-slate-300'
+                negocio.es_prueba ? 'bg-marca' : 'bg-tarjeta-hundida'
               }`}
             >
               <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-tarjeta transition-transform ${
                   negocio.es_prueba ? 'translate-x-[22px]' : 'translate-x-0.5'
                 }`}
               />
@@ -347,35 +337,32 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
           </div>
         </section>
 
-        <section className="mb-6 border-t border-red-200 pt-6">
-          <h3 className="mb-2 text-sm font-medium text-red-700">Zona peligrosa</h3>
+        <section className="mb-6 border-t border-negativo-borde pt-6">
+          <h3 className="mb-2 text-sm font-medium text-negativo">Zona peligrosa</h3>
 
           {negocio.es_prueba === true && (
             <div className="mb-4">
-              <p className="mb-3 text-xs text-slate-500">
+              <p className="mb-3 text-xs text-texto-3">
                 Esta es una cuenta de prueba. Podés borrar su historial transaccional para seguir
                 probando sin arrastrar datos viejos.
               </p>
               <button
                 onClick={() => setMostrarResetearPrueba(true)}
-                className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                className="rounded-md border border-negativo px-3 py-2 text-sm font-medium text-negativo hover:bg-negativo-fondo"
               >
                 Resetear datos de prueba
               </button>
             </div>
           )}
 
-          <div className={negocio.es_prueba === true ? 'border-t border-red-100 pt-4' : ''}>
-            <p className="mb-3 text-xs text-slate-500">
+          <div className={negocio.es_prueba === true ? 'border-t border-negativo-borde pt-4' : ''}>
+            <p className="mb-3 text-xs text-texto-3">
               Elimina el negocio por completo: datos y usuarios, para siempre. No se puede
               deshacer. Distinto del reset de datos de prueba, que conserva productos y usuarios.
             </p>
-            <button
-              onClick={() => setMostrarEliminar(true)}
-              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
-            >
+            <Button variante="destructivo" compacto onClick={() => setMostrarEliminar(true)}>
               Eliminar cuenta
-            </button>
+            </Button>
           </div>
         </section>
 
