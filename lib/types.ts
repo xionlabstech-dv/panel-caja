@@ -18,6 +18,7 @@ export interface Negocio {
   es_prueba: boolean;
   nombre_comercial: string | null;
   solicitud_eliminacion_en: string | null;
+  usa_cuentas_pagar: boolean;
 }
 
 export interface MiCuenta {

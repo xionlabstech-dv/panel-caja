@@ -9,6 +9,7 @@ import {
   actualizarLimiteUsuarios,
   actualizarLimiteProductos,
   actualizarEsPrueba,
+  actualizarUsaCuentasPagar,
 } from '@/lib/negocios';
 import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
@@ -50,6 +51,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
   const [mostrarResetearPrueba, setMostrarResetearPrueba] = useState(false);
   const [guardandoEsPrueba, setGuardandoEsPrueba] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
+  const [guardandoCuentasPagar, setGuardandoCuentasPagar] = useState(false);
 
   async function aplicarCambioEstado(estado: Estado) {
     setError(null);
@@ -152,6 +154,25 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
       setError(err?.message ?? 'No se pudo actualizar la cuenta de prueba');
     } finally {
       setGuardandoEsPrueba(false);
+    }
+  }
+
+  async function toggleCuentasPagar() {
+    setError(null);
+    setAviso(null);
+    setGuardandoCuentasPagar(true);
+    try {
+      await actualizarUsaCuentasPagar(negocio.id, !negocio.usa_cuentas_pagar);
+      setAviso(
+        negocio.usa_cuentas_pagar
+          ? 'Cuentas por pagar desactivado.'
+          : 'Cuentas por pagar activado.',
+      );
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar Cuentas por pagar');
+    } finally {
+      setGuardandoCuentasPagar(false);
     }
   }
 
@@ -306,6 +327,35 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
           <p className="mt-4 text-sm text-texto-3">
             Productos cargados: <span className="font-medium text-texto">{negocio.cantidad_productos}</span>
           </p>
+        </section>
+
+        <section className="mb-6 border-t border-borde-divisor pt-6">
+          <h3 className="mb-2 text-sm font-medium text-texto-2">Funciones</h3>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-texto-2">Cuentas por pagar</p>
+              <p className="mt-0.5 text-xs text-texto-4">
+                Agrega la pantalla &quot;Por pagar&quot; al menú Más del comercio. Solo la ve el
+                administrador, no los cajeros.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={negocio.usa_cuentas_pagar}
+              onClick={toggleCuentasPagar}
+              disabled={guardandoCuentasPagar}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                negocio.usa_cuentas_pagar ? 'bg-marca' : 'bg-tarjeta-hundida'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-tarjeta transition-transform ${
+                  negocio.usa_cuentas_pagar ? 'translate-x-[22px]' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
         </section>
 
         <UsuariosSeccion negocioId={negocio.id} negocioNombre={negocio.nombre} />
