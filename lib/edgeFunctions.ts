@@ -4,6 +4,7 @@ export interface CrearNegocioInput {
   nombreNegocio: string;
   usuario: string;
   password: string;
+  nombreEncargado: string;
 }
 
 export async function crearNegocioConAdmin(input: CrearNegocioInput): Promise<{ negocioId: string }> {
@@ -25,6 +26,7 @@ export async function crearNegocioConAdmin(input: CrearNegocioInput): Promise<{ 
       nombre_negocio: input.nombreNegocio,
       usuario: input.usuario,
       password: input.password,
+      nombre_encargado: input.nombreEncargado,
     }),
   });
 

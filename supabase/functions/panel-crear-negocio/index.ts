@@ -93,7 +93,12 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'No autorizado' }, 403);
   }
 
-  let body: { nombre_negocio?: string; usuario?: string; password?: string };
+  let body: {
+    nombre_negocio?: string;
+    usuario?: string;
+    password?: string;
+    nombre_encargado?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -103,9 +108,16 @@ Deno.serve(async (req) => {
   const nombreNegocio = body.nombre_negocio?.trim() ?? '';
   const usuario = body.usuario?.trim() ?? '';
   const password = body.password ?? '';
+  const nombreEncargado = body.nombre_encargado?.trim() ?? '';
 
   if (!nombreNegocio) {
     return jsonResponse({ error: 'El nombre del negocio es obligatorio' }, 400);
+  }
+  if (!nombreEncargado) {
+    return jsonResponse({ error: 'El nombre del encargado es obligatorio' }, 400);
+  }
+  if (nombreEncargado.length > 40) {
+    return jsonResponse({ error: 'El nombre del encargado no puede pasar de 40 caracteres' }, 400);
   }
   if (usuario.length < 3) {
     return jsonResponse({ error: 'El usuario debe tener al menos 3 caracteres' }, 400);
@@ -159,6 +171,7 @@ Deno.serve(async (req) => {
     id: nuevoUsuarioId,
     negocio_id: negocioId,
     rol: 'admin',
+    nombre: nombreEncargado,
   });
 
   if (perfilError) {

@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 
 function FormularioCrearNegocio() {
   const [nombreNegocio, setNombreNegocio] = useState('');
+  const [nombreEncargado, setNombreEncargado] = useState('');
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -21,9 +22,10 @@ function FormularioCrearNegocio() {
     setExito(null);
     setCargando(true);
     try {
-      await crearNegocioConAdmin({ nombreNegocio, usuario, password });
+      await crearNegocioConAdmin({ nombreNegocio, usuario, password, nombreEncargado });
       setExito(`Negocio "${nombreNegocio}" creado con el admin "${usuario}".`);
       setNombreNegocio('');
+      setNombreEncargado('');
       setUsuario('');
       setPassword('');
     } catch (err: any) {
@@ -56,6 +58,20 @@ function FormularioCrearNegocio() {
         <div className="border-t border-borde-divisor pt-4">
           <p className="mb-3 text-sm font-medium text-texto-2">Primer usuario admin</p>
           <div className="space-y-4">
+            <div>
+              <Input
+                label="Nombre visible"
+                type="text"
+                value={nombreEncargado}
+                onChange={(e) => setNombreEncargado(e.target.value)}
+                required
+                maxLength={40}
+                placeholder="Ej: Ángel"
+              />
+              <p className="mt-1 text-xs text-texto-4">
+                El nombre de la persona. Sale en los comprobantes y presupuestos que emita.
+              </p>
+            </div>
             <div>
               <Input
                 label="Usuario"
