@@ -10,6 +10,7 @@ import {
   actualizarLimiteProductos,
   actualizarEsPrueba,
   actualizarUsaCuentasPagar,
+  actualizarUsaIva,
 } from '@/lib/negocios';
 import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
@@ -52,6 +53,7 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
   const [guardandoEsPrueba, setGuardandoEsPrueba] = useState(false);
   const [mostrarEliminar, setMostrarEliminar] = useState(false);
   const [guardandoCuentasPagar, setGuardandoCuentasPagar] = useState(false);
+  const [guardandoIva, setGuardandoIva] = useState(false);
 
   async function aplicarCambioEstado(estado: Estado) {
     setError(null);
@@ -173,6 +175,25 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
       setError(err?.message ?? 'No se pudo actualizar Cuentas por pagar');
     } finally {
       setGuardandoCuentasPagar(false);
+    }
+  }
+
+  async function toggleIva() {
+    setError(null);
+    setAviso(null);
+    setGuardandoIva(true);
+    try {
+      await actualizarUsaIva(negocio.id, !negocio.usa_iva);
+      setAviso(
+        negocio.usa_iva
+          ? 'IVA en presupuestos desactivado.'
+          : 'IVA en presupuestos activado.',
+      );
+      onActualizado();
+    } catch (err: any) {
+      setError(err?.message ?? 'No se pudo actualizar el IVA');
+    } finally {
+      setGuardandoIva(false);
     }
   }
 
@@ -352,6 +373,33 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
               <span
                 className={`absolute top-0.5 h-5 w-5 rounded-full bg-tarjeta transition-transform ${
                   negocio.usa_cuentas_pagar ? 'translate-x-[22px]' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-texto-2">IVA en presupuestos</p>
+              <p className="mt-0.5 text-xs text-texto-4">
+                Desglosa subtotal, IVA y total en los presupuestos. La tasa se define
+                por producto (exento, 8%, 16%, 31%). No afecta las ventas ni los
+                comprobantes.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={negocio.usa_iva}
+              onClick={toggleIva}
+              disabled={guardandoIva}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                negocio.usa_iva ? 'bg-marca' : 'bg-tarjeta-hundida'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-tarjeta transition-transform ${
+                  negocio.usa_iva ? 'translate-x-[22px]' : 'translate-x-0.5'
                 }`}
               />
             </button>

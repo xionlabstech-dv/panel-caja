@@ -19,6 +19,7 @@ export interface Negocio {
   nombre_comercial: string | null;
   solicitud_eliminacion_en: string | null;
   usa_cuentas_pagar: boolean;
+  usa_iva: boolean;
 }
 
 export interface MiCuenta {

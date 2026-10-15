@@ -71,3 +71,11 @@ export async function actualizarUsaCuentasPagar(negocioId: string, usa: boolean)
   });
   if (error) throw error;
 }
+
+export async function actualizarUsaIva(negocioId: string, usa: boolean) {
+  const { error } = await supabase.rpc('panel_actualizar_usa_iva', {
+    p_negocio_id: negocioId,
+    p_usa_iva: usa,
+  });
+  if (error) throw error;
+}
