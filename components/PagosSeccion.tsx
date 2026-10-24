@@ -301,7 +301,11 @@ export default function PagosSeccion({
               <Input
                 label="Tasa (Bs por USD)"
                 type="number"
-                step="0.01"
+                // La tasa oficial del BCV tiene 4 decimales (886,2271) y la
+                // columna es numeric(14,4). Con step="0.01" el navegador
+                // rechazaba por stepMismatch el valor que nosotros mismos
+                // precargamos.
+                step="0.0001"
                 min={0}
                 value={tasa}
                 onChange={(e) => setTasa(e.target.value)}
