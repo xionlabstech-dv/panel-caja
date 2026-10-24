@@ -224,7 +224,14 @@ export default function PagosSeccion({
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setMoneda(m)}
+                  onClick={() => {
+                    if (m === moneda) return;
+                    setMoneda(m);
+                    // El monto es específico de la moneda: lo que servía para USD nunca
+                    // sirve para Bs ni al revés. Dejarlo era registrar 10 Bs en vez de
+                    // 8.863, o $8.863 en vez de $10.
+                    setMonto('');
+                  }}
                   className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
                     moneda === m
                       ? 'border-marca bg-marca text-texto-invertido'
