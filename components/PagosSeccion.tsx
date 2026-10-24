@@ -214,7 +214,9 @@ export default function PagosSeccion({
 
     let lineasGrupo: { negocioId: string; monto: number }[] | null = null;
     if (esGrupo) {
-      const seleccionados = Object.entries(montosGrupo).filter(([, v]) => v.trim() !== '');
+      // Sin filtrar: toda clave presente es una casilla tildada, y si su monto
+      // está vacío hay que avisar, no descartar el negocio en silencio.
+      const seleccionados = Object.entries(montosGrupo);
 
       if (seleccionados.length === 0) {
         setFormError('Elegí al menos un negocio más, o destildá la casilla.');
@@ -447,6 +449,12 @@ export default function PagosSeccion({
                     // sirve para Bs ni al revés. Dejarlo era registrar 10 Bs en vez de
                     // 8.863, o $8.863 en vez de $10.
                     setMonto('');
+                    // Mismo criterio que el monto principal: son montos de una
+                    // moneda y no sirven para la otra. Se vacían pero se
+                    // conservan las claves, para no destildar lo que Juan eligió.
+                    setMontosGrupo((prev) =>
+                      Object.fromEntries(Object.keys(prev).map((id) => [id, ''])),
+                    );
                   }}
                   className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
                     moneda === m
