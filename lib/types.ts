@@ -45,3 +45,25 @@ export interface AuditoriaEntry {
   usuario_afectado: string;
   detalle: string | null;
 }
+
+export type Moneda = 'USD' | 'Bs';
+
+export interface PagoLicencia {
+  id: string;
+  negocio_id: string;
+  negocio_nombre: string;
+  fecha_pago: string;
+  periodo_desde: string;
+  periodo_hasta: string;
+  monto: number;
+  moneda: Moneda;
+  tasa: number | null;
+  // Calculado por la base. Puede venir null si el pago quedó en Bs sin tasa,
+  // algo que la base ya no permite pero que conviene no asumir imposible.
+  monto_usd: number | null;
+  metodo: string | null;
+  referencia: string | null;
+  nota: string | null;
+  registrado_por_nombre: string | null;
+  creado_en: string;
+}

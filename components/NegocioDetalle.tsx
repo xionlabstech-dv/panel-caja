@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Estado, Negocio } from '@/lib/types';
 import {
   cambiarEstado,
@@ -16,6 +16,7 @@ import { formatearFechaHora } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
 import UsuariosSeccion from './UsuariosSeccion';
+import PagosSeccion from './PagosSeccion';
 import ResetearDatosPruebaModal from './ResetearDatosPruebaModal';
 import EliminarNegocioModal from './EliminarNegocioModal';
 import type { EliminarNegocioResultado } from '@/lib/edgeFunctions';
@@ -38,6 +39,15 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<Estado>(negocio.estado);
   const [nota, setNota] = useState(negocio.estado_nota ?? '');
   const [fechaPago, setFechaPago] = useState(negocio.fecha_proximo_pago ?? '');
+
+  // `fechaPago` arranca del prop, y NegocioDetalle no se remonta cuando la
+  // lista se recarga: sin esto, registrar o borrar un pago cambia la fecha en
+  // la base y el campo sigue mostrando la vieja hasta cerrar y reabrir.
+  // Solo este campo lo necesita: los demás (nota, precio, límites) únicamente
+  // cambian cuando el propio usuario los edita, así que no se desfasan.
+  useEffect(() => {
+    setFechaPago(negocio.fecha_proximo_pago ?? '');
+  }, [negocio.fecha_proximo_pago]);
   const [precio, setPrecio] = useState(negocio.precio_mensual?.toString() ?? '');
   const [limiteUsuarios, setLimiteUsuarios] = useState(negocio.limite_usuarios.toString());
   const [limiteProductos, setLimiteProductos] = useState(negocio.limite_productos?.toString() ?? '');
@@ -286,6 +296,13 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
             </Button>
           </div>
         </section>
+
+        <PagosSeccion
+          negocioId={negocio.id}
+          precioMensual={negocio.precio_mensual}
+          fechaProximoPago={negocio.fecha_proximo_pago}
+          onPagoRegistrado={onActualizado}
+        />
 
         <section className="mb-6 border-t border-borde-divisor pt-6">
           <h3 className="mb-2 text-sm font-medium text-texto-2">Facturación y límites</h3>
