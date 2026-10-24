@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Moneda, PagoLicencia } from './types';
+import type { LineaPagoGrupo, Moneda, PagoLicencia } from './types';
 
 export interface NuevoPago {
   monto: number;
@@ -22,6 +22,32 @@ export async function registrarPago(negocioId: string, pago: NuevoPago): Promise
     p_fecha_pago: pago.fechaPago ?? null,
     p_periodo_desde: pago.periodoDesde ?? null,
     p_periodo_hasta: pago.periodoHasta ?? null,
+    p_metodo: pago.metodo ?? null,
+    p_referencia: pago.referencia ?? null,
+    p_nota: pago.nota ?? null,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+export interface NuevoPagoGrupo {
+  lineas: LineaPagoGrupo[];
+  moneda: Moneda;
+  tasa?: number | null;
+  fechaPago?: string | null;
+  metodo?: string | null;
+  referencia?: string | null;
+  nota?: string | null;
+}
+
+export async function registrarPagoGrupo(pago: NuevoPagoGrupo): Promise<string> {
+  const { data, error } = await supabase.rpc('panel_registrar_pago_grupo', {
+    // Los períodos van en null a propósito: la base los resuelve por negocio,
+    // cada uno desde su propia fecha de vencimiento.
+    p_lineas: pago.lineas.map((l) => ({ negocio_id: l.negocioId, monto: l.monto, periodo_desde: null, periodo_hasta: null })),
+    p_moneda: pago.moneda,
+    p_tasa: pago.tasa ?? null,
+    p_fecha_pago: pago.fechaPago ?? null,
     p_metodo: pago.metodo ?? null,
     p_referencia: pago.referencia ?? null,
     p_nota: pago.nota ?? null,

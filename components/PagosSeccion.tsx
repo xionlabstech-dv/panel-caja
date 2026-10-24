@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { registrarPago, listarPagos, eliminarPago } from '@/lib/pagos';
+import { registrarPago, registrarPagoGrupo, listarPagos, eliminarPago } from '@/lib/pagos';
+import { listarNegocios } from '@/lib/negocios';
 import { tasaOficial } from '@/lib/tasa';
 import { formatearFecha } from '@/lib/fechas';
-import type { Moneda, PagoLicencia, TasaOficial } from '@/lib/types';
+import type { Moneda, Negocio, PagoLicencia, TasaOficial } from '@/lib/types';
 import ConfirmModal from './ConfirmModal';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -69,6 +70,17 @@ export default function PagosSeccion({
   const [cargandoTasa, setCargandoTasa] = useState(false);
   const [tasaEnFoco, setTasaEnFoco] = useState(false);
 
+  const [esGrupo, setEsGrupo] = useState(false);
+  const [otrosNegocios, setOtrosNegocios] = useState<Negocio[]>([]);
+  const [cargandoNegocios, setCargandoNegocios] = useState(false);
+  const [errorNegocios, setErrorNegocios] = useState<string | null>(null);
+  // negocio_id -> monto escrito. La presencia de la clave ES el estado de la
+  // casilla: si no está, no entra en el grupo. No hay un booleano "marcado"
+  // separado a propósito — si lo hubiera, podría desincronizarse del valor
+  // (casilla destildada pero el monto todavía ahí), y ese monto se mandaría
+  // igual al registrar el pago.
+  const [montosGrupo, setMontosGrupo] = useState<Record<string, string>>({});
+
   const cargar = useCallback(async () => {
     setError(null);
     try {
@@ -131,7 +143,46 @@ export default function PagosSeccion({
     setReferencia('');
     setNota('');
     setFormError(null);
+    setEsGrupo(false);
+    setOtrosNegocios([]);
+    setErrorNegocios(null);
+    setMontosGrupo({});
     setMostrarFormulario(true);
+  }
+
+  async function alternarEsGrupo(marcado: boolean) {
+    setEsGrupo(marcado);
+    if (!marcado) {
+      // Al destildar, se descartan las selecciones: si Juan la vuelve a
+      // marcar, empieza de cero en vez de reaparecer con negocios de una
+      // transferencia que ya no está armando.
+      setMontosGrupo({});
+      return;
+    }
+    if (otrosNegocios.length > 0 || cargandoNegocios) return;
+    setCargandoNegocios(true);
+    setErrorNegocios(null);
+    try {
+      const todos = await listarNegocios();
+      setOtrosNegocios(todos.filter((n) => n.id !== negocioId && !n.es_prueba));
+    } catch (err: any) {
+      setErrorNegocios(err?.message ?? 'No se pudo cargar la lista de negocios');
+    } finally {
+      setCargandoNegocios(false);
+    }
+  }
+
+  function alternarNegocioDelGrupo(otroId: string) {
+    setMontosGrupo((prev) => {
+      if (otroId in prev) {
+        const next = { ...prev };
+        delete next[otroId];
+        return next;
+      }
+      // Se precarga con el monto principal: en el caso típico (varios
+      // negocios por el mismo monto) Juan no escribe nada.
+      return { ...prev, [otroId]: monto };
+    });
   }
 
   async function onSubmitForm(e: React.FormEvent) {
@@ -161,19 +212,58 @@ export default function PagosSeccion({
       return;
     }
 
+    let lineasGrupo: { negocioId: string; monto: number }[] | null = null;
+    if (esGrupo) {
+      const seleccionados = Object.entries(montosGrupo).filter(([, v]) => v.trim() !== '');
+
+      if (seleccionados.length === 0) {
+        setFormError('Elegí al menos un negocio más, o destildá la casilla.');
+        return;
+      }
+
+      for (const [id, v] of seleccionados) {
+        const n = Number(v);
+        if (v.trim() === '' || Number.isNaN(n) || n < 0) {
+          const nombre = otrosNegocios.find((o) => o.id === id)?.nombre ?? id;
+          setFormError(`El monto de ${nombre} debe ser un número mayor o igual a 0.`);
+          return;
+        }
+      }
+
+      // El negocio que se está viendo va siempre primero, con el monto
+      // principal: si se armara el arreglo solo con los seleccionados, el
+      // pago de este negocio no entraría en el grupo.
+      lineasGrupo = [
+        { negocioId, monto: montoNum },
+        ...seleccionados.map(([id, v]) => ({ negocioId: id, monto: Number(v) })),
+      ];
+    }
+
     setGuardando(true);
     try {
-      await registrarPago(negocioId, {
-        monto: montoNum,
-        moneda,
-        tasa: tasaNum,
-        fechaPago: fechaPago.trim() === '' ? null : fechaPago,
-        periodoDesde: desde,
-        periodoHasta: hasta,
-        metodo: metodo.trim() === '' ? null : metodo.trim(),
-        referencia: referencia.trim() === '' ? null : referencia.trim(),
-        nota: nota.trim() === '' ? null : nota.trim(),
-      });
+      if (lineasGrupo) {
+        await registrarPagoGrupo({
+          lineas: lineasGrupo,
+          moneda,
+          tasa: tasaNum,
+          fechaPago: fechaPago.trim() === '' ? null : fechaPago,
+          metodo: metodo.trim() === '' ? null : metodo.trim(),
+          referencia: referencia.trim() === '' ? null : referencia.trim(),
+          nota: nota.trim() === '' ? null : nota.trim(),
+        });
+      } else {
+        await registrarPago(negocioId, {
+          monto: montoNum,
+          moneda,
+          tasa: tasaNum,
+          fechaPago: fechaPago.trim() === '' ? null : fechaPago,
+          periodoDesde: desde,
+          periodoHasta: hasta,
+          metodo: metodo.trim() === '' ? null : metodo.trim(),
+          referencia: referencia.trim() === '' ? null : referencia.trim(),
+          nota: nota.trim() === '' ? null : nota.trim(),
+        });
+      }
       setAviso('Pago registrado.');
       setMostrarFormulario(false);
       await cargar();
@@ -213,6 +303,11 @@ export default function PagosSeccion({
   const tasaValida = tasa.trim() !== '' && !Number.isNaN(Number(tasa)) && Number(tasa) > 0;
 
   const tasaPorDebajo = oficial != null && tasaValida && Number(tasa) < oficial.tasa;
+
+  const totalGrupo = esGrupo
+    ? (Number(monto) || 0) + Object.values(montosGrupo).reduce((acc, v) => acc + (Number(v) || 0), 0)
+    : 0;
+  const totalGrupoEquivalente = esGrupo && moneda === 'Bs' && tasaValida ? totalGrupo / Number(tasa) : null;
 
   return (
     <section className="border-t border-borde-divisor pt-6">
@@ -266,6 +361,75 @@ export default function PagosSeccion({
               >
                 Usar ${precioMensual} × tasa = {formatearMonto(precioMensual * Number(tasa))}
               </button>
+            )}
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm text-texto-2">
+              <input
+                type="checkbox"
+                checked={esGrupo}
+                onChange={(e) => alternarEsGrupo(e.target.checked)}
+              />
+              Esta transferencia cubrió varios negocios
+            </label>
+
+            {esGrupo && (
+              <div className="mt-2 space-y-2 rounded-md bg-tarjeta-hundida p-3">
+                {cargandoNegocios && (
+                  <p className="text-xs text-texto-4">Cargando negocios...</p>
+                )}
+                {errorNegocios && (
+                  <p className="text-xs text-negativo">{errorNegocios}</p>
+                )}
+                {!cargandoNegocios && !errorNegocios && otrosNegocios.length === 0 && (
+                  <p className="text-xs text-texto-4">No hay otros negocios para elegir.</p>
+                )}
+                {!cargandoNegocios &&
+                  otrosNegocios.map((otro) => {
+                    const marcado = otro.id in montosGrupo;
+                    return (
+                      <div key={otro.id} className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={marcado}
+                          onChange={() => alternarNegocioDelGrupo(otro.id)}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm text-texto">{otro.nombre}</p>
+                          <p className="text-xs text-texto-4">
+                            Vence el {formatearFecha(otro.fecha_proximo_pago)}
+                          </p>
+                        </div>
+                        {marcado && (
+                          <input
+                            type="number"
+                            step="0.01"
+                            min={0}
+                            value={montosGrupo[otro.id]}
+                            onChange={(e) =>
+                              setMontosGrupo((prev) => ({ ...prev, [otro.id]: e.target.value }))
+                            }
+                            className="w-28 rounded-md border border-borde-campo bg-transparent px-2 py-1 text-sm text-texto"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+
+                {Object.keys(montosGrupo).length > 0 && (
+                  <p className="pt-1 text-sm font-medium text-texto">
+                    Total transferido: {moneda === 'USD' ? '$' : 'Bs'} {formatearMonto(totalGrupo)}
+                    {totalGrupoEquivalente != null && (
+                      <span className="font-normal text-texto-3">
+                        {' '}
+                        (≈ ${formatearMonto(totalGrupoEquivalente)})
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -426,6 +590,11 @@ export default function PagosSeccion({
                       (≈ ${formatearMonto(pago.monto_usd)})
                     </span>
                   )}
+                  {pago.negocios_del_grupo > 1 && (
+                    <span className="rounded-full bg-tarjeta-hundida px-2 py-0.5 text-xs text-texto-2">
+                      Parte de una transferencia de {pago.negocios_del_grupo} negocios
+                    </span>
+                  )}
                 </div>
                 <p className="truncate text-xs text-texto-3">
                   Período {formatearFecha(pago.periodo_desde)} – {formatearFecha(pago.periodo_hasta)} ·
@@ -455,7 +624,11 @@ export default function PagosSeccion({
           titulo="¿Eliminar este pago?"
           mensaje={`Se va a borrar el pago de ${pagoAEliminar.moneda === 'USD' ? '$' : 'Bs'} ${formatearMonto(
             pagoAEliminar.monto,
-          )} del ${formatearFecha(pagoAEliminar.fecha_pago)}. La fecha de próximo pago del negocio puede recalcularse.`}
+          )} del ${formatearFecha(pagoAEliminar.fecha_pago)}. La fecha de próximo pago del negocio puede recalcularse.${
+            pagoAEliminar.negocios_del_grupo > 1
+              ? ` Este pago vino de una transferencia que cubrió ${pagoAEliminar.negocios_del_grupo} negocios. Se borra solo esta parte; las otras quedan como están.`
+              : ''
+          }`}
           confirmarTexto="Eliminar"
           cargando={eliminando}
           onCancelar={() => setPagoAEliminar(null)}

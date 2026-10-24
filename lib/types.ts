@@ -66,6 +66,13 @@ export interface PagoLicencia {
   nota: string | null;
   registrado_por_nombre: string | null;
   creado_en: string;
+  grupo_pago: string | null;
+  negocios_del_grupo: number;
+}
+
+export interface LineaPagoGrupo {
+  negocioId: string;
+  monto: number;
 }
 
 export interface TasaOficial {
