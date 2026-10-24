@@ -67,3 +67,11 @@ export interface PagoLicencia {
   registrado_por_nombre: string | null;
   creado_en: string;
 }
+
+export interface TasaOficial {
+  tasa: number;
+  fecha_tasa: string | null;
+  exacta: boolean;
+  actualizada_en: string | null;
+  chequeo_fallido: boolean;
+}

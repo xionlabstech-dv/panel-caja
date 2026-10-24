@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { registrarPago, listarPagos, eliminarPago } from '@/lib/pagos';
+import { tasaOficial } from '@/lib/tasa';
 import { formatearFecha } from '@/lib/fechas';
-import type { Moneda, PagoLicencia } from '@/lib/types';
+import type { Moneda, PagoLicencia, TasaOficial } from '@/lib/types';
 import ConfirmModal from './ConfirmModal';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -64,6 +65,10 @@ export default function PagosSeccion({
   const [pagoAEliminar, setPagoAEliminar] = useState<PagoLicencia | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
+  const [oficial, setOficial] = useState<TasaOficial | null>(null);
+  const [cargandoTasa, setCargandoTasa] = useState(false);
+  const [tasaEnFoco, setTasaEnFoco] = useState(false);
+
   const cargar = useCallback(async () => {
     setError(null);
     try {
@@ -80,11 +85,45 @@ export default function PagosSeccion({
     cargar();
   }, [cargar]);
 
+  // La tasa que corresponde es la de la fecha del pago, no la de hoy: si Juan
+  // cambia "Fecha de pago", hay que recargarla para esa fecha.
+  // `tasa` NO va en las dependencias a propósito: si estuviera, cada tecla
+  // que Juan escribe dispararía otra consulta. Se lee con la forma funcional
+  // de setTasa, que toma el valor más reciente del estado al aplicarse, no el
+  // que estaba cerrado en la clausura cuando arrancó esta consulta — si se
+  // leyera `tasa` directo acá, una consulta que resuelve tarde pisaría lo que
+  // Juan ya haya escrito mientras tanto.
+  useEffect(() => {
+    if (!mostrarFormulario || !fechaPago) return;
+    let cancelado = false;
+    setCargandoTasa(true);
+    tasaOficial(fechaPago)
+      .then((t) => {
+        if (cancelado) return;
+        setOficial(t);
+        // Solo se precarga si el campo está vacío: si Juan ya escribió una
+        // tasa a mano, cambiar la fecha no debe pisársela.
+        if (t) {
+          setTasa((prev) => (prev.trim() === '' ? String(t.tasa) : prev));
+        }
+      })
+      .catch(() => {
+        if (!cancelado) setOficial(null);
+      })
+      .finally(() => {
+        if (!cancelado) setCargandoTasa(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [mostrarFormulario, fechaPago]);
+
   function abrirFormulario() {
     const desde = fechaProximoPago ?? hoyISO();
     setMonto(precioMensual != null ? String(precioMensual) : '');
     setMoneda('USD');
     setTasa('');
+    setOficial(null);
     setFechaPago(hoyISO());
     setPeriodoDesde(desde);
     setPeriodoHasta(sumarUnMes(desde));
@@ -171,6 +210,10 @@ export default function PagosSeccion({
     Number(tasa) > 0 &&
     !Number.isNaN(Number(monto));
 
+  const tasaValida = tasa.trim() !== '' && !Number.isNaN(Number(tasa)) && Number(tasa) > 0;
+
+  const tasaPorDebajo = oficial != null && tasaValida && Number(tasa) < oficial.tasa;
+
   return (
     <section className="border-t border-borde-divisor pt-6">
       <div className="mb-2 flex items-center justify-between">
@@ -215,6 +258,15 @@ export default function PagosSeccion({
                 ≈ ${formatearMonto(Number(monto) / Number(tasa))}
               </p>
             )}
+            {moneda === 'Bs' && tasaValida && precioMensual != null && (
+              <button
+                type="button"
+                onClick={() => setMonto((precioMensual * Number(tasa)).toFixed(2))}
+                className="mt-1 text-xs font-medium text-texto-3 hover:text-texto"
+              >
+                Usar ${precioMensual} × tasa = {formatearMonto(precioMensual * Number(tasa))}
+              </button>
+            )}
           </div>
 
           <div>
@@ -245,15 +297,49 @@ export default function PagosSeccion({
           </div>
 
           {moneda === 'Bs' && (
-            <Input
-              label="Tasa (Bs por USD)"
-              type="number"
-              step="0.01"
-              min={0}
-              value={tasa}
-              onChange={(e) => setTasa(e.target.value)}
-              required
-            />
+            <div>
+              <Input
+                label="Tasa (Bs por USD)"
+                type="number"
+                step="0.01"
+                min={0}
+                value={tasa}
+                onChange={(e) => setTasa(e.target.value)}
+                onFocus={() => setTasaEnFoco(true)}
+                onBlur={() => setTasaEnFoco(false)}
+                required
+              />
+
+              {cargandoTasa && (
+                <p className="mt-1 text-xs text-texto-4">Buscando la tasa oficial...</p>
+              )}
+
+              {/* 1. El chequeo automático contra el BCV falló: la tasa puede estar vieja. */}
+              {!cargandoTasa && oficial?.chequeo_fallido && (
+                <p className="mt-1 text-xs text-negativo">
+                  El último chequeo automático contra el BCV falló. La tasa de abajo puede estar
+                  desactualizada.
+                </p>
+              )}
+
+              {/* 2. No hay tasa registrada para ese día: se está mostrando una anterior. */}
+              {!cargandoTasa && oficial && !oficial.exacta && (
+                <p className="mt-1 text-xs text-texto-4">
+                  {oficial.fecha_tasa
+                    ? `No hay tasa registrada para ese día. Se muestra la del ${formatearFecha(oficial.fecha_tasa)}.`
+                    : 'No hay histórico para esa fecha. Se muestra la tasa oficial vigente.'}
+                </p>
+              )}
+
+              {/* 3. La tasa escrita está por debajo de la oficial: avisa, no bloquea. Solo se
+                  muestra al perder el foco, para no juzgar un número a medio escribir. */}
+              {!cargandoTasa && !tasaEnFoco && oficial && tasaPorDebajo && (
+                <p className="mt-1 text-xs text-aviso">
+                  Por debajo de la tasa oficial ({formatearMonto(oficial.tasa)}). Si el pago fue a
+                  esta tasa, registralo igual.
+                </p>
+              )}
+            </div>
           )}
 
           <Input
