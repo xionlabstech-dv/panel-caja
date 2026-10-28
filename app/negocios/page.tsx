@@ -6,7 +6,7 @@ import NavBar from '@/components/NavBar';
 import EstadoBadge from '@/components/EstadoBadge';
 import NegocioDetalle from '@/components/NegocioDetalle';
 import { listarNegocios } from '@/lib/negocios';
-import { diasHasta, formatearFecha, formatearFechaHora } from '@/lib/fechas';
+import { diasHasta, formatearFecha, formatearFechaHora, ultimaVentaRelativa } from '@/lib/fechas';
 import type { Negocio } from '@/lib/types';
 import type { EliminarNegocioResultado } from '@/lib/edgeFunctions';
 
@@ -39,6 +39,13 @@ function AvisoPago({ negocio }: { negocio: Negocio }) {
     );
   }
   return <span className="text-sm text-texto-3">{formatearFecha(negocio.fecha_proximo_pago)}</span>;
+}
+
+// Los dos números de actividad van siempre juntos — el de 7 días solo, miente.
+function textoUltimaVenta(negocio: Negocio): string {
+  return negocio.ultima_venta
+    ? `Última venta ${ultimaVentaRelativa(negocio.ultima_venta)}`
+    : 'Sin ventas';
 }
 
 function ListaNegocios() {
@@ -135,6 +142,9 @@ function ListaNegocios() {
                   {negocio.cantidad_productos} producto{negocio.cantidad_productos === 1 ? '' : 's'}
                   {negocio.precio_mensual != null && ` · $${negocio.precio_mensual}/mes`}
                 </div>
+                <div className="text-sm text-texto-3">
+                  {textoUltimaVenta(negocio)} · {negocio.ventas_7d} en 7 días · {negocio.ventas_30d} en 30
+                </div>
                 {negocio.estado_nota && (
                   <div className="mt-1 truncate text-sm text-texto-3">{negocio.estado_nota}</div>
                 )}
@@ -148,56 +158,69 @@ function ListaNegocios() {
           </div>
 
           <div className="hidden overflow-hidden rounded-lg border border-borde-campo bg-tarjeta sm:block">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-borde-divisor bg-tarjeta-hundida text-xs uppercase text-texto-3">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Negocio</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Próximo pago</th>
-                  <th className="px-4 py-3 font-medium">Precio</th>
-                  <th className="px-4 py-3 font-medium">Usuarios</th>
-                  <th className="px-4 py-3 font-medium">Productos</th>
-                  <th className="px-4 py-3 font-medium">Nota interna</th>
-                  <th className="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-borde-divisor">
-                {ordenados.map((negocio) => (
-                  <tr key={negocio.id} className="hover:bg-tarjeta-hundida">
-                    <td className="px-4 py-3 font-medium text-texto">
-                      {negocio.nombre}
-                      {negocio.solicitud_eliminacion_en && (
-                        <div className="mt-0.5 text-xs font-medium text-aviso">
-                          Pidió cerrar el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <EstadoBadge estado={negocio.estado} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <AvisoPago negocio={negocio} />
-                    </td>
-                    <td className="px-4 py-3 text-texto-3">
-                      {negocio.precio_mensual != null ? `$${negocio.precio_mensual}` : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-texto-3">{negocio.cantidad_usuarios}</td>
-                    <td className="px-4 py-3 text-texto-3">{negocio.cantidad_productos}</td>
-                    <td className="max-w-xs truncate px-4 py-3 text-texto-3">
-                      {negocio.estado_nota || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setSeleccionado(negocio)}
-                        className="text-sm font-medium text-texto-2 hover:text-texto"
-                      >
-                        Administrar
-                      </button>
-                    </td>
+            {/* Ocho columnas de datos ya no entran en una pantalla de escritorio
+                angosta. Antes se recortaban en silencio contra el overflow-hidden
+                de arriba (ya pasaba con Nota interna y Administrar incluso con
+                siete); ahora se puede desplazar horizontal en vez de perderlas. */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-borde-divisor bg-tarjeta-hundida text-xs uppercase text-texto-3">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Negocio</th>
+                    <th className="px-4 py-3 font-medium">Estado</th>
+                    <th className="px-4 py-3 font-medium">Próximo pago</th>
+                    <th className="px-4 py-3 font-medium">Precio</th>
+                    <th className="px-4 py-3 font-medium">Usuarios</th>
+                    <th className="px-4 py-3 font-medium">Productos</th>
+                    <th className="px-4 py-3 font-medium">Actividad</th>
+                    <th className="px-4 py-3 font-medium">Nota interna</th>
+                    <th className="px-4 py-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-borde-divisor">
+                  {ordenados.map((negocio) => (
+                    <tr key={negocio.id} className="hover:bg-tarjeta-hundida">
+                      <td className="px-4 py-3 font-medium text-texto">
+                        {negocio.nombre}
+                        {negocio.solicitud_eliminacion_en && (
+                          <div className="mt-0.5 text-xs font-medium text-aviso">
+                            Pidió cerrar el {formatearFechaHora(negocio.solicitud_eliminacion_en)}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <EstadoBadge estado={negocio.estado} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <AvisoPago negocio={negocio} />
+                      </td>
+                      <td className="px-4 py-3 text-texto-3">
+                        {negocio.precio_mensual != null ? `$${negocio.precio_mensual}` : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-texto-3">{negocio.cantidad_usuarios}</td>
+                      <td className="px-4 py-3 text-texto-3">{negocio.cantidad_productos}</td>
+                      <td className="px-4 py-3 text-texto-3">
+                        <div className="min-w-[11rem]">{textoUltimaVenta(negocio)}</div>
+                        <div className="min-w-[11rem] text-xs">
+                          {negocio.ventas_7d} en 7 días · {negocio.ventas_30d} en 30
+                        </div>
+                      </td>
+                      <td className="max-w-xs truncate px-4 py-3 text-texto-3">
+                        {negocio.estado_nota || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setSeleccionado(negocio)}
+                          className="text-sm font-medium text-texto-2 hover:text-texto"
+                        >
+                          Administrar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}

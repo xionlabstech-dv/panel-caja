@@ -20,6 +20,11 @@ export interface Negocio {
   solicitud_eliminacion_en: string | null;
   usa_cuentas_pagar: boolean;
   usa_iva: boolean;
+  // Actividad real del negocio — ver panel_listar_negocios. null en
+  // ultima_venta = nunca vendió (negocio nuevo, o nunca lo usaron).
+  ultima_venta: string | null;
+  ventas_7d: number;
+  ventas_30d: number;
 }
 
 export interface MiCuenta {

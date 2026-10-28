@@ -12,7 +12,7 @@ import {
   actualizarUsaCuentasPagar,
   actualizarUsaIva,
 } from '@/lib/negocios';
-import { formatearFechaHora } from '@/lib/fechas';
+import { formatearFechaHora, ultimaVentaRelativa } from '@/lib/fechas';
 import EstadoBadge from './EstadoBadge';
 import ConfirmModal from './ConfirmModal';
 import UsuariosSeccion from './UsuariosSeccion';
@@ -220,6 +220,23 @@ export default function NegocioDetalle({ negocio, onCerrar, onActualizado, onEli
           <button onClick={onCerrar} className="text-texto-4 hover:text-texto">
             ✕
           </button>
+        </div>
+
+        <div className="mb-6 grid grid-cols-3 gap-3 rounded-md border border-borde-campo p-3 text-center">
+          <div>
+            <p className="text-xs text-texto-4">Última venta</p>
+            <p className="mt-1 text-sm font-medium text-texto">
+              {ultimaVentaRelativa(negocio.ultima_venta)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-texto-4">Ventas en 7 días</p>
+            <p className="mt-1 text-sm font-medium text-texto">{negocio.ventas_7d}</p>
+          </div>
+          <div>
+            <p className="text-xs text-texto-4">Ventas en 30 días</p>
+            <p className="mt-1 text-sm font-medium text-texto">{negocio.ventas_30d}</p>
+          </div>
         </div>
 
         {error && (
