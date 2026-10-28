@@ -4,6 +4,7 @@ import { useState } from 'react';
 import RequireAuth from '@/components/RequireAuth';
 import NavBar from '@/components/NavBar';
 import { crearNegocioConAdmin } from '@/lib/edgeFunctions';
+import { generarPassword } from '@/lib/password';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
@@ -12,9 +13,28 @@ function FormularioCrearNegocio() {
   const [nombreEncargado, setNombreEncargado] = useState('');
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [exito, setExito] = useState<string | null>(null);
+
+  function generar() {
+    setPassword(generarPassword());
+    // El punto de generarla es pasársela al comerciante: una contraseña en
+    // puntitos no se le puede pasar a nadie.
+    setVerPassword(true);
+  }
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Si el navegador no permite copiar, el campo sigue visible para copiar a mano.
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +48,8 @@ function FormularioCrearNegocio() {
       setNombreEncargado('');
       setUsuario('');
       setPassword('');
+      setVerPassword(false);
+      setCopiado(false);
     } catch (err: any) {
       setError(err?.message ?? 'No se pudo crear el negocio');
     } finally {
@@ -86,14 +108,43 @@ function FormularioCrearNegocio() {
               </p>
             </div>
             <div>
-              <Input
-                label="Contraseña"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
+              <label className="mb-1 block text-sm font-medium text-texto-2">Contraseña</label>
+              <div className="flex gap-2">
+                <Input
+                  type={verPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <Button
+                  type="button"
+                  variante="secundario"
+                  compacto
+                  onClick={() => setVerPassword((v) => !v)}
+                  className="shrink-0 text-xs"
+                >
+                  {verPassword ? 'Ocultar' : 'Mostrar'}
+                </Button>
+              </div>
+              <div className="mt-1 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={generar}
+                  className="text-xs font-medium text-texto-3 hover:text-texto"
+                >
+                  Generar
+                </button>
+                {verPassword && password && (
+                  <button
+                    type="button"
+                    onClick={copiar}
+                    className="text-xs font-medium text-texto-3 hover:text-texto"
+                  >
+                    {copiado ? 'Copiado' : 'Copiar'}
+                  </button>
+                )}
+              </div>
               <p className="mt-1 text-xs text-texto-4">Mínimo 8 caracteres.</p>
             </div>
           </div>

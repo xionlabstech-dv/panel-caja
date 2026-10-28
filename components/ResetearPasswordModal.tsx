@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { resetearPassword } from '@/lib/usuarios';
+import { generarPassword } from '@/lib/password';
 import type { UsuarioNegocio } from '@/lib/types';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -52,6 +53,13 @@ export default function ResetearPasswordModal({ usuario, negocioNombre, onCerrar
     onCerrar();
   }
 
+  function generar() {
+    setPassword(generarPassword());
+    // El punto de generarla es pasársela al comerciante: tiene que quedar
+    // visible aunque Juan la hubiera ocultado antes de tocar el botón.
+    setMostrarPassword(true);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4">
       <div className="w-full max-w-sm rounded-lg bg-tarjeta p-6 shadow-lg">
@@ -85,6 +93,13 @@ export default function ResetearPasswordModal({ usuario, negocioNombre, onCerrar
                 {mostrarPassword ? 'Ocultar' : 'Mostrar'}
               </Button>
             </div>
+            <button
+              type="button"
+              onClick={generar}
+              className="mt-1 text-xs font-medium text-texto-3 hover:text-texto"
+            >
+              Generar
+            </button>
             <p className="mt-1 text-xs text-texto-4">
               Mínimo 8 caracteres. Se muestra en texto plano para poder dictarla por teléfono.
             </p>
